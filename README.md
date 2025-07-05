@@ -31,8 +31,6 @@ This project demonstrates end-to-end time series analysis and forecasting on web
 - Problem-solving skills (see troubleshooting section in the interpretation report)
 - Communication of technical results to a non-technical audience
 
-## Example Outputs
-*You can add screenshots of your plots or a sample of your forecast output here.*
 
 ---
 
