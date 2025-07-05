@@ -1,0 +1,92 @@
+---
+title: "Website Visitors Time Series Analysis"
+author: "Islam Md Monaim"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tseries)
+library(forecast)
+library(ggplot2)
+library(readr)
+library(lmtest)
+```
+
+# Introduction
+This notebook demonstrates time series analysis and forecasting on website visitor data. We will walk through each step, explaining the purpose, the code, and interpreting the results. This is designed to showcase data analysis and forecasting skills to recruiters.
+
+# Load Data
+We begin by loading the website visitors data. The dataset contains daily counts of website visitors. We use `read.table()` because the file is space-separated.
+
+```{r load-data}
+data <- read.table("../data/3_webtraffic.csv", header = TRUE)
+head(data)
+```
+
+*Output:* The first few rows of the dataset, showing the date and number of visitors per day. This confirms the data loaded correctly.
+
+# Data Preparation
+We convert the `date` column to a Date type and create a time series object from the `visitors` column. This prepares the data for time series analysis.
+
+```{r data-prep}
+data$date <- as.Date(data$date)
+ts_data <- ts(data$visitors, frequency = 7) # Weekly seasonality assumed
+plot(ts_data, main = "Website Visitors Time Series", ylab = "Visitors", xlab = "Time")
+```
+
+*Why:* Converting to a time series object allows us to use time series analysis tools. The plot helps visualize trends, seasonality, and anomalies.
+
+*Output Explanation:* The plot shows how website visitors change over time. Look for trends (upward/downward), seasonality (repeating patterns), or outliers.
+
+# Dickey-Fuller Test (Stationarity)
+The Augmented Dickey-Fuller (ADF) test checks if the time series is stationary (i.e., its properties do not change over time). Stationarity is important for many forecasting models.
+
+```{r dickey-fuller}
+adf_test <- adf.test(ts_data)
+adf_test
+```
+
+*Why:* Many time series models, including ARIMA, require the data to be stationary. The ADF test helps us decide if differencing is needed.
+
+*Output Explanation:* If the p-value is less than 0.05, the series is stationary. If not, we may need to difference the data.
+
+# ACF and PACF Plots
+The Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) plots help identify the order of ARIMA models by showing correlations at different lags.
+
+```{r acf-pacf}
+acf(ts_data, main = "ACF of Website Visitors")
+pacf(ts_data, main = "PACF of Website Visitors")
+```
+
+*Why:* These plots guide us in selecting AR (autoregressive) and MA (moving average) terms for ARIMA.
+
+*Output Explanation:* Significant spikes outside the blue bands indicate important lags. Use these to help set ARIMA parameters.
+
+# ARIMA Model Fitting
+We use `auto.arima()` to automatically select the best ARIMA model for the data. ARIMA models are powerful for forecasting time series data.
+
+```{r arima-fit}
+fit <- auto.arima(ts_data)
+summary(fit)
+```
+
+*Why:* ARIMA models capture trends, seasonality, and autocorrelation. `auto.arima()` finds the best parameters automatically.
+
+*Output Explanation:* The summary shows the chosen ARIMA model and its coefficients. Lower AIC/BIC values indicate a better fit.
+
+# Forecasting
+We forecast the next 30 days of website visitors using the fitted ARIMA model and plot the results.
+
+```{r forecast}
+fc <- forecast(fit, h = 30)
+plot(fc, main = "30-Day Forecast of Website Visitors")
+```
+
+*Why:* Forecasting helps predict future website traffic, which is valuable for planning and decision-making.
+
+*Output Explanation:* The plot shows predicted visitors (with confidence intervals) for the next 30 days. The shaded area represents uncertainty in the forecast.
+
+# Conclusion
+This analysis demonstrates your ability to perform end-to-end time series forecasting in R, including data loading, stationarity testing, model selection, and interpretation of results. These are valuable skills for data-driven roles. 
